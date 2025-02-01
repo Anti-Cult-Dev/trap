@@ -1,6 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { spawnSync } from 'child_process';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Ensure .env file exists
 const envPath = path.join(__dirname, '..', '.env');
@@ -16,7 +20,7 @@ if (process.platform === 'win32') {
   // Windows-specific setup
   console.log('Setting up SQLite for Windows...');
   try {
-    spawnSync('node', ['-e', `require('sqlite3')`], {
+    spawnSync('node', ['-e', `import('sqlite3')`], {
       stdio: 'inherit',
       shell: true
     });
@@ -24,11 +28,12 @@ if (process.platform === 'win32') {
     console.error('Error setting up SQLite:', error);
   }
 } else {
-  // Unix-based setup
-  console.log('Setting up SQLite for Unix-based system...');
+  // Unix-like systems setup
+  console.log('Setting up SQLite for Unix-like system...');
   try {
-    spawnSync('node', ['-e', `require('sqlite3')`], {
-      stdio: 'inherit'
+    spawnSync('node', ['-e', `import('sqlite3')`], {
+      stdio: 'inherit',
+      shell: true
     });
   } catch (error) {
     console.error('Error setting up SQLite:', error);
