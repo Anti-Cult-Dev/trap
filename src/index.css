@@ -1,0 +1,216 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Teko:wght@300;400;600&family=Russo+One&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes gradient-x {
+  0%, 100% {
+    background-size: 200% 100%;
+    background-position: left center;
+  }
+  50% {
+    background-size: 200% 100%;
+    background-position: right center;
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 15s ease infinite;
+}
+
+body {
+  background-color: black;
+  color: white;
+  font-family: 'Orbitron', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Animated background */
+.animated-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.15) 0%, transparent 50%);
+  overflow: hidden;
+}
+
+.animated-bg::before,
+.animated-bg::after {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 105, 180, 0.15) 0%,
+    rgba(255, 20, 147, 0.05) 25%,
+    transparent 70%
+  );
+  animation: bgPulse 15s ease-in-out infinite alternate;
+  opacity: 0.3;
+}
+
+.animated-bg::after {
+  animation-delay: -7.5s;
+  filter: blur(50px);
+}
+
+@keyframes bgPulse {
+  0% { transform: translate(-15%, -15%) rotate(0deg) scale(1); }
+  100% { transform: translate(15%, 15%) rotate(5deg) scale(1.1); }
+}
+
+/* Glowing text effect */
+.glow-text {
+  text-shadow: 
+    0 0 5px rgba(236, 72, 153, 0.5),
+    0 0 10px rgba(45, 212, 191, 0.3),
+    0 0 15px rgba(236, 72, 153, 0.2);
+  animation: textPulse 3s ease-in-out infinite;
+}
+
+@keyframes textPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Sexy hover effect */
+.hover-glow {
+  transition: all 0.3s ease;
+  text-shadow: 0 0 8px rgba(236, 72, 153, 0.6);
+  position: relative;
+  isolation: isolate;
+}
+
+.hover-glow:hover {
+  text-shadow: 
+    0 0 12px rgba(236, 72, 153, 0.8),
+    0 0 20px rgba(45, 212, 191, 0.6);
+  transform: translateY(-1px);
+}
+
+.hover-glow::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.2), transparent);
+  transform: translateX(-100%);
+  animation: shimmer 3s infinite;
+  z-index: -1;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* Spicy gradient text */
+.gradient-text {
+  @apply bg-gradient-to-r from-pink-500 to-teal-400 bg-clip-text text-transparent;
+  animation: gradientFlow 8s linear infinite;
+  background-size: 200% auto;
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Naughty button style */
+.btn-spicy {
+  @apply px-6 py-2 bg-gradient-to-r from-pink-500 to-teal-400 rounded-full
+    hover:from-pink-400 hover:to-teal-300 transition-all font-bold uppercase tracking-wider
+    shadow-lg shadow-pink-500/25 hover:shadow-teal-400/25 relative overflow-hidden;
+}
+
+.btn-spicy::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.btn-spicy:hover::before {
+  left: 100%;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(236, 72, 153, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(236, 72, 153, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(236, 72, 153, 0.5);
+}
+
+/* Sexy card styles */
+.card-spicy {
+  @apply bg-gradient-to-br from-pink-500/10 to-teal-400/5 backdrop-blur-sm rounded-xl
+    border border-pink-500/20 hover:border-teal-400/40 transition-all relative;
+  animation: cardPulse 3s ease-in-out infinite;
+}
+
+@keyframes cardPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+/* Naughty gradient border */
+.border-spicy {
+  background: linear-gradient(90deg, #EC4899, #2DD4BF);
+  -webkit-background-clip: padding-box;
+  background-clip: padding-box;
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.border-spicy::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  margin: -1px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #EC4899, #2DD4BF);
+}
+
+/* Update text sizes */
+h1 {
+  @apply text-3xl md:text-5xl lg:text-6xl;
+}
+
+h2 {
+  @apply text-2xl md:text-3xl lg:text-4xl;
+}
+
+h3 {
+  @apply text-xl md:text-2xl;
+}
+
+p {
+  @apply text-base;
+}
