@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { Heart, MessageSquare, Share2, Lock } from 'lucide-react';
-import { useEngagement } from '../hooks/useEngagement';
 import { useGlobalStore } from '../store/globalStore';
 import UsernamePrompt from './UsernamePrompt';
 import ShareModal from './ShareModal';
+import PostComments from './PostComments';
 
 interface Post {
   id: string;
   imageUrl: string;
   isLocked: boolean;
-  isFreebie?: boolean;
   description: string;
+  previewUrl?: string;
 }
 
 interface PostGridProps {
@@ -19,188 +19,186 @@ interface PostGridProps {
 }
 
 export default function PostGrid({ posts, isSubscribed }: PostGridProps) {
-  const { engagements, likePost, unlikePost, addComment, sharePost } = useEngagement();
-  const { username, getUsername } = useGlobalStore();
+  const { username, getUsername, getComments } = useGlobalStore();
   const [activePost, setActivePost] = useState<string | null>(null);
-  const [comment, setComment] = useState('');
   const [shareModalPost, setShareModalPost] = useState<Post | null>(null);
   const [showUsernamePrompt, setShowUsernamePrompt] = useState(false);
-  const [pendingComment, setPendingComment] = useState<string | null>(null);
-  const [unlockedFreebies, setUnlockedFreebies] = useState<Set<string>>(new Set());
+  const [showPreview, setShowPreview] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [showSubscribePrompt, setShowSubscribePrompt] = useState(false);
 
-  const handleLike = (postId: string) => {
-    const hasLiked = engagements[postId]?.likes > 0;
-    if (hasLiked) {
-      unlikePost(postId);
-    } else {
-      likePost(postId);
-    }
-  };
-
-  const handleComment = (postId: string) => {
-    if (!comment.trim()) return;
-    
-    if (!username) {
-      setPendingComment(comment);
-      setShowUsernamePrompt(true);
+  const handleCommentClick = (postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (post?.isLocked && !isSubscribed) {
+      setShowSubscribePrompt(true);
       return;
     }
-    
-    addComment(postId, comment);
-    setComment('');
+    setActivePost(postId);
   };
 
-  const handleUsernameComplete = () => {
-    setShowUsernamePrompt(false);
-    if (pendingComment && activePost) {
-      addComment(activePost, pendingComment);
-      setComment('');
-      setPendingComment(null);
+  const handlePostClick = (post: Post) => {
+    if (post.isLocked && !isSubscribed) {
+      setSelectedPost(post);
+      if (post.previewUrl) {
+        setShowPreview(true);
+      } else {
+        setShowSubscribePrompt(true);
+      }
     }
   };
 
-  const handleUnlockFreebie = (postId: string) => {
-    setUnlockedFreebies(prev => new Set([...prev, postId]));
+  const closePreview = () => {
+    setShowPreview(false);
+    setSelectedPost(null);
+  };
+
+  const closeSubscribePrompt = () => {
+    setShowSubscribePrompt(false);
+    setSelectedPost(null);
   };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {posts.map((post) => {
-        const isUnlocked = isSubscribed || (post.isFreebie && unlockedFreebies.has(post.id));
-        
-        return (
-          <div key={post.id} className="relative group">
-            <div className={`aspect-square relative overflow-hidden rounded-xl 
-              ${post.isLocked && !isUnlocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
-              {/* Image with hover effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-purple-900/20 
-                group-hover:opacity-0 transition-opacity duration-300" />
-              
-              <img
-                src={post.imageUrl}
-                alt="Post content"
-                className={`w-full h-full object-cover transform transition-transform duration-700
-                  group-hover:scale-110 ${post.isLocked && !isUnlocked ? 'blur-3xl brightness-[0.3]' : ''}`}
-              />
-
-              {/* Locked overlay */}
-              {post.isLocked && !isUnlocked && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-lg">
-                  <div className="flex flex-col items-center space-y-4">
-                    <Lock className="w-12 h-12 text-pink-500 drop-shadow-glow animate-pulse-slow" />
-                    {post.isFreebie && !unlockedFreebies.has(post.id) ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUnlockFreebie(post.id);
-                        }}
-                        className="px-4 py-2 bg-pink-500 rounded-full text-white hover:bg-pink-400 
-                          transition-colors transform hover:scale-105"
-                      >
-                        Click to Unlock Free! 🎁
-                      </button>
-                    ) : (
-                      <div className="absolute bottom-0 left-0 right-0 p-4 text-center bg-gradient-to-t from-black/90 to-transparent">
-                        <p className="text-pink-300 font-['Teko'] text-lg drop-shadow-glow">
-                          Subscribe to unlock this content
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Engagement overlay */}
-              {(!post.isLocked || isUnlocked) && (
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 
-                  transition-opacity duration-300 p-4 flex flex-col justify-between">
-                  <div className="text-pink-100 font-['Teko'] text-lg">
-                    {post.description}
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <button
-                      onClick={() => handleLike(post.id)}
-                      className="flex items-center space-x-2 text-pink-300 hover:text-pink-400 transition-colors"
-                    >
-                      <Heart
-                        className="w-6 h-6"
-                        fill={engagements[post.id]?.likes > 0 ? 'currentColor' : 'none'}
-                      />
-                      <span>{engagements[post.id]?.likes || 0}</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => setActivePost(activePost === post.id ? null : post.id)}
-                      className="flex items-center space-x-2 text-pink-300 hover:text-pink-400 transition-colors"
-                    >
-                      <MessageSquare className="w-6 h-6" />
-                      <span>{engagements[post.id]?.comments?.length || 0}</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => setShareModalPost(post)}
-                      className="flex items-center space-x-2 text-pink-300 hover:text-pink-400 transition-colors"
-                    >
-                      <Share2 className="w-6 h-6" />
-                      <span>{engagements[post.id]?.shares || 0}</span>
-                    </button>
-                  </div>
+      {posts.map((post) => (
+        <div
+          key={post.id}
+          className="relative aspect-square overflow-hidden rounded-xl group cursor-pointer"
+          onClick={() => handlePostClick(post)}
+        >
+          <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-800">
+            <img
+              src={post.imageUrl}
+              alt={post.description}
+              className={`w-full h-full object-cover ${post.isLocked && !isSubscribed ? 'blur-xl brightness-50' : ''}`}
+            />
+            {post.isLocked && !isSubscribed && (
+              <div 
+                className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer"
+                onClick={() => setShowSubscribePrompt(true)}
+              >
+                <Lock className="w-8 h-8 text-white/80" />
+                <p className="text-white/80 text-sm mt-2">Subscribe to unlock</p>
+              </div>
+            )}
+            <div className={`absolute inset-0 transition-all flex items-center justify-center 
+              ${(!post.isLocked || isSubscribed) ? 'bg-black/0 group-hover:bg-black/60 opacity-0 group-hover:opacity-100' : ''}`}>
+              {(!post.isLocked || isSubscribed) && (
+                <div className="flex gap-4">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCommentClick(post.id);
+                    }}
+                    className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                  >
+                    <MessageSquare className="w-6 h-6 text-white" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShareModalPost(post);
+                    }}
+                    className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                  >
+                    <Share2 className="w-6 h-6 text-white" />
+                  </button>
                 </div>
               )}
             </div>
-
-            {/* Comments section */}
-            {activePost === post.id && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-black/90 backdrop-blur-sm 
-                rounded-xl p-4 z-10 border border-pink-500/20">
-                <div className="max-h-60 overflow-y-auto space-y-2 mb-4">
-                  {engagements[post.id]?.comments?.map(comment => (
-                    <div key={comment.id} className="text-pink-100 text-sm">
-                      <span className="text-pink-400">{comment.username}:</span> {comment.content}
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder="Add a comment..."
-                    className="flex-1 bg-pink-900/20 border border-pink-500/20 rounded-full px-4 py-2
-                      focus:outline-none focus:border-pink-500/40 text-pink-100 placeholder-pink-300/50"
-                  />
-                  <button
-                    onClick={() => handleComment(post.id)}
-                    className="px-4 py-2 bg-pink-500 rounded-full text-white hover:bg-pink-400 
-                      transition-colors"
-                  >
-                    Post
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
-        );
-      })}
-      
+          
+          <div className="mt-2 flex items-center justify-between text-gray-400">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCommentClick(post.id);
+                }}
+                className="flex items-center gap-1 hover:text-white transition-colors"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>{post.isLocked && !isSubscribed ? '?' : getComments(post.id).length}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* Comments Modal */}
+      {activePost && (
+        <PostComments
+          postId={activePost}
+          onClose={() => setActivePost(null)}
+        />
+      )}
+
       {/* Share Modal */}
       {shareModalPost && (
         <ShareModal
-          url={`${window.location.href}#post-${shareModalPost.id}`}
-          onClose={() => {
-            setShareModalPost(null);
-            sharePost(shareModalPost.id);
-          }}
-          title={`Check out this post! 💖`}
-          image={shareModalPost.imageUrl}
+          post={shareModalPost}
+          onClose={() => setShareModalPost(null)}
         />
+      )}
+
+      {/* Preview Modal - Only for first locked image */}
+      {showPreview && selectedPost && selectedPost.previewUrl && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="relative max-w-2xl w-full mx-4">
+            <button
+              onClick={closePreview}
+              className="absolute -top-10 right-0 text-white hover:text-pink-400"
+            >
+              Close
+            </button>
+            <div className="bg-gray-900 rounded-lg overflow-hidden">
+              <img
+                src={selectedPost.previewUrl}
+                alt="Preview content"
+                className="w-full h-auto"
+              />
+              <div className="p-4 text-white text-center">
+                <p className="text-xl font-bold mb-2">Want to see more? 😘</p>
+                <p className="mb-4">Subscribe to unlock all my exclusive content! 💋</p>
+                <button
+                  className="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-6 rounded-full"
+                  onClick={closePreview}
+                >
+                  Subscribe Now 🔥
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Subscribe Prompt - For all other locked images */}
+      {showSubscribePrompt && selectedPost && !selectedPost.previewUrl && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="relative max-w-md w-full mx-4">
+            <button
+              onClick={closeSubscribePrompt}
+              className="absolute -top-10 right-0 text-white hover:text-pink-400"
+            >
+              Close
+            </button>
+            <div className="bg-gray-900 rounded-lg p-6 text-white text-center">
+              <Lock className="w-12 h-12 mx-auto mb-4 text-pink-500" />
+              <h2 className="text-2xl font-bold mb-2">Exclusive Content 🔒</h2>
+              <p className="mb-6">Subscribe to unlock this and all other exclusive content! 💕</p>
+              <button
+                className="bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-8 rounded-full"
+                onClick={closeSubscribePrompt}
+              >
+                Subscribe Now 🔥
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       
       {/* Username Prompt */}
       {showUsernamePrompt && (
-        <UsernamePrompt onComplete={handleUsernameComplete} />
+        <UsernamePrompt onComplete={() => setShowUsernamePrompt(false)} />
       )}
     </div>
   );

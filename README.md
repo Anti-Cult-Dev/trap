@@ -1,85 +1,88 @@
-# ElizaOS Project
+# Agent Profiles Project
 
-A modern web application built with TypeScript, React, Next.js, and the ElizaOS framework.
+A React + TypeScript project for displaying agent profiles with locked/unlocked content.
 
-## Prerequisites
+## Quick Start
 
-- Node.js >= 18.0.0
-- pnpm >= 8.0.0
-- Git
-
-## Installation
-
-1. Clone the repository:
+1. Install dependencies:
 ```bash
-git clone <your-repo-url>
-cd <project-directory>
+npm install
 ```
 
-2. Install dependencies:
+2. Start development server:
 ```bash
-pnpm install
+npm run dev
 ```
 
-3. Set up environment variables:
+3. Build for production:
 ```bash
-# The postinstall script will automatically copy .env.example to .env if it doesn't exist
-# You can modify the .env file with your specific configuration
+npm run build
 ```
 
-## Development
-
-Start the development server:
-
+4. Preview production build:
 ```bash
-pnpm dev
+npm run preview
 ```
 
-## Building for Production
+## Project Structure
 
-Build the project:
-
-```bash
-pnpm build
+```
+public/
+├── images/
+│   ├── profile-pictures/     # Profile pictures
+│   ├── profile-page-pictures/# Regular visible content
+│   └── restricted/          # Locked content
+src/
+├── components/             # React components
+├── data/                  # Agent data and configurations
+├── pages/                 # Page components
+└── types/                 # TypeScript type definitions
 ```
 
-Start the production server:
+## Important Notes
 
+1. All sensitive content is in the `public/images/restricted/` directory
+2. Each agent has:
+   - Regular visible content
+   - Locked content with one preview image
+   - Profile picture and banner
+
+## Deployment Steps
+
+1. Build the project:
 ```bash
-pnpm start
+npm run build
 ```
 
-## Scripts
+2. The build output will be in the `dist` directory
 
-- `pnpm dev` - Start development server
-- `pnpm build` - Build for production
-- `pnpm start` - Start production server
-- `pnpm lint` - Run ESLint
-- `pnpm typecheck` - Run TypeScript type checking
+3. Deploy the contents of `dist` to your hosting service
 
-## Cross-Platform Support
+4. Make sure all image paths in the `public` directory are copied to your hosting service in the same structure
 
-This project is configured to work on both Windows and Unix-based systems (Mac, Linux). The following features ensure cross-platform compatibility:
+## File Structure Requirements
 
-- Uses `cross-env` for environment variables
-- Platform-specific SQLite configuration
-- Path normalization using `path.join()`
-- Automated postinstall setup script
+Maintain this exact directory structure for images:
+```
+public/images/
+├── profile-pictures/
+│   ├── methanypfp.jpg
+│   └── roxypfp.png
+├── profile-page-pictures/
+│   ├── methany/
+│   │   └── (regular content)
+│   └── roxy/
+│       └── (regular content)
+└── restricted/
+    ├── methany/
+    │   └── (locked content)
+    └── roxy/
+        └── (locked content)
+```
 
-## Troubleshooting
+## Dependencies
 
-### Windows-Specific Issues
-
-If you encounter SQLite issues on Windows:
-1. Make sure you have the latest Visual Studio Build Tools installed
-2. Run `pnpm install` with administrator privileges
-
-### Mac/Linux-Specific Issues
-
-If you encounter permission issues:
-1. Make sure you have appropriate file permissions
-2. Run `chmod +x scripts/postinstall.js` if needed
-
-## License
-
-[Your License]
+- React 18.2.0
+- TypeScript 5.3.3
+- Vite 5.1.0
+- Tailwind CSS 3.4.1

@@ -1,9 +1,24 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+interface FavoriteAgent {
+  id: string;
+  // Add other properties as needed
+}
+
+interface Comment {
+  id: string;
+  agentId: string;
+  username: string;
+  content: string;
+  timestamp: number;
+}
+
 interface GlobalState {
   follows: Record<string, number>;
   favorites: Record<string, number>;
+  favoriteAgents: FavoriteAgent[];
+  comments: Comment[];
   username: string | null;
   hasVisitedAgents: boolean;
   incrementFollows: (agentId: string) => void;
@@ -12,8 +27,13 @@ interface GlobalState {
   decrementFavorites: (agentId: string) => void;
   getFollowCount: (agentId: string) => number;
   getFavoriteCount: (agentId: string) => number;
+  toggleFavoriteAgent: (agent: FavoriteAgent) => void;
+  getFavoriteAgents: () => FavoriteAgent[];
+  isFavoriteAgent: (agentId: string) => boolean;
+  addComment: (agentId: string, content: string) => void;
+  getComments: (agentId: string) => Comment[];
   setUsername: (username: string) => void;
-  getUsername: () => string;
+  getUsername: () => string | null;
 }
 
 export const useGlobalStore = create<GlobalState>()(
@@ -21,6 +41,8 @@ export const useGlobalStore = create<GlobalState>()(
     (set, get) => ({
       follows: {},
       favorites: {},
+      favoriteAgents: [],
+      comments: [],
       username: null,
       hasVisitedAgents: false,
       
@@ -58,6 +80,47 @@ export const useGlobalStore = create<GlobalState>()(
         
       getFollowCount: (agentId: string) => get().follows[agentId] || 0,
       getFavoriteCount: (agentId: string) => get().favorites[agentId] || 0,
+      
+      toggleFavoriteAgent: (agent: FavoriteAgent) =>
+        set((state) => {
+          const exists = state.favoriteAgents.some(fav => fav.id === agent.id);
+          if (exists) {
+            return {
+              favoriteAgents: state.favoriteAgents.filter(fav => fav.id !== agent.id)
+            };
+          }
+          return {
+            favoriteAgents: [...state.favoriteAgents, agent]
+          };
+        }),
+      
+      getFavoriteAgents: () => get().favoriteAgents,
+      
+      isFavoriteAgent: (agentId: string) => 
+        get().favoriteAgents.some(fav => fav.id === agentId),
+      
+      addComment: (agentId: string, content: string) => {
+        const username = get().username;
+        if (!username) return;
+        
+        set((state) => ({
+          comments: [
+            ...state.comments,
+            {
+              id: crypto.randomUUID(),
+              agentId,
+              username,
+              content,
+              timestamp: Date.now()
+            }
+          ]
+        }));
+      },
+
+      getComments: (agentId: string) => 
+        get().comments
+          .filter(comment => comment.agentId === agentId)
+          .sort((a, b) => b.timestamp - a.timestamp),
       
       setUsername: (username: string) =>
         set({ username }),

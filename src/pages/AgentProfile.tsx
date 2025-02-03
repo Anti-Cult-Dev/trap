@@ -10,97 +10,85 @@ import ShareModal from '../components/ShareModal';
 import TokenInfo from '../components/TokenInfo';
 import ModelBreak from '../components/ModelBreak';
 import PostGrid from '../components/PostGrid';
+import Comments from '../components/Comments';
 
 const generatePosts = (agentId: string) => {
   const posts = [];
   
-  // Special handling for Methany's posts
   if (agentId === 'methany') {
-    // First visible post (preview)
-    posts.push({
-      id: `${agentId}-post-preview`,
-      imageUrl: '/images/profile-page-pictures/methany/methanypreview.png',
-      isLocked: false,
-      description: 'Hey there! Welcome to my profile 💖✨'
-    });
-
-    // Regular posts (non-locked)
+    // Regular posts (non-locked) - only clothed/safe content
     const regularImages = [
       '/images/profile-page-pictures/methany/methanyconfused.jpg',
       '/images/profile-page-pictures/methany/methanyspun.jpg',
       '/images/profile-page-pictures/methany/methanybeg.jpg'
     ];
     
+    // Locked images (in restricted directory) - all sensitive/nude content
+    const lockedImages = [
+      '/images/restricted/methany/methanyparty.jpg', // This will be the preview
+      '/images/restricted/methany/methanyblunt.jpg',
+      '/images/restricted/methany/methanyshower1.jpg',
+      '/images/restricted/methany/methanyshowerlockedlocked.jpg',
+      '/images/restricted/methany/methanysquirtlocked.jpg',
+      '/images/restricted/methany/methanyxxxlocked.jpg'
+    ];
+    
     // Add regular posts
     regularImages.forEach((imageUrl, i) => {
       posts.push({
-        id: `${agentId}-post-${i + 1}`,
+        id: `${agentId}-post-${i}`,
         imageUrl,
         isLocked: false,
         description: `Feeling wild and free ${i + 1} 💊✨`
       });
     });
     
-    // Add freebie post
-    posts.push({
-      id: `${agentId}-post-freebie`,
-      imageUrl: '/images/profile-page-pictures/methany/methanyshower1.jpg',
-      isLocked: true,
-      isFreebie: true,
-      description: '🎁 Special preview just for you! Unlock this one for free! 💖'
-    });
-    
-    // Locked images (including newly locked ones)
-    const lockedImages = [
-      '/images/profile-page-pictures/methany/methanyparty.jpg',
-      '/images/profile-page-pictures/methany/methanyblunt.jpg',
-      '/images/profile-page-pictures/methany/methanyshowerlockedlocked.jpg',
-      '/images/profile-page-pictures/methany/methanysquirtlocked.jpg',
-      '/images/profile-page-pictures/methany/methanyxxxlocked.jpg'
-    ];
-    
-    // Add locked posts
+    // Add locked posts with restricted access
     lockedImages.forEach((imageUrl, i) => {
       posts.push({
-        id: `${agentId}-post-${i + regularImages.length + 2}`,
+        id: `${agentId}-post-${i + regularImages.length}`,
         imageUrl,
         isLocked: true,
-        description: `Exclusive content 🔒 Subscribe to see more! 💋`
+        description: `Exclusive content 🔒 Subscribe to see more! 💋`,
+        // Only the first locked image gets a preview
+        previewUrl: i === 0 ? '/images/restricted/methany/methanyparty.jpg' : undefined
       });
     });
   } else if (agentId === 'roxy') {
-    // First post (profile picture)
-    posts.push({
-      id: `${agentId}-post-pp`,
-      imageUrl: '/images/profile-page-pictures/roxy/roxypp.png',
-      isLocked: false,
-      description: 'Hey there! Welcome to my profile 💖✨'
-    });
-
-    // Regular posts
+    // Regular posts (non-locked) - SFW gaming/cosplay content
     const regularImages = [
       '/images/profile-page-pictures/roxy/roxy1.png',
       '/images/profile-page-pictures/roxy/roxy3.png',
-      '/images/profile-page-pictures/roxy/roxy5.png',
-      '/images/profile-page-pictures/roxy/5.png'
+      '/images/profile-page-pictures/roxy/roxypp.png'
+    ];
+    
+    // Locked images (in restricted directory) - NSFW/exclusive content
+    const lockedImages = [
+      '/images/restricted/roxy/roxy5.png', // This will be the preview
+      '/images/restricted/roxy/5.png',
+      '/images/restricted/roxy/roxi.webp'
     ];
     
     // Add regular posts
     regularImages.forEach((imageUrl, i) => {
       posts.push({
-        id: `${agentId}-post-${i + 1}`,
+        id: `${agentId}-post-${i}`,
         imageUrl,
         isLocked: false,
-        description: `Just being me ${i + 1} 💫✨`
+        description: `Gaming time! Level ${i + 1} unlocked! 🎮✨`
       });
     });
     
-    // Add locked post
-    posts.push({
-      id: `${agentId}-post-locked`,
-      imageUrl: '/images/profile-page-pictures/roxy/roxi.webp',
-      isLocked: true,
-      description: 'Exclusive content 🔒 Subscribe to see more! 💋'
+    // Add locked posts with restricted access
+    lockedImages.forEach((imageUrl, i) => {
+      posts.push({
+        id: `${agentId}-post-${i + regularImages.length}`,
+        imageUrl,
+        isLocked: true,
+        description: `Exclusive gaming content 🔒 Subscribe for private sessions! 🎮💕`,
+        // Only the first locked image gets a preview
+        previewUrl: i === 0 ? '/images/restricted/roxy/roxy5.png' : undefined
+      });
     });
   } else {
     // Default post generation for other agents
@@ -108,7 +96,7 @@ const generatePosts = (agentId: string) => {
       posts.push({
         id: `${agentId}-post-${i}`,
         imageUrl: `https://source.unsplash.com/random/800x800?girl&sig=${i}`,
-        isLocked: i >= 5, // Only lock posts 5-8
+        isLocked: i >= 5,
         description: `Exclusive content ${i + 1} 💖`
       });
     }
@@ -294,13 +282,16 @@ export default function AgentProfile() {
           </div>
         </div>
 
-        {/* Content Grid */}
-        <div className="py-12">
+        {/* Posts Grid */}
+        <div className="mt-8">
           <PostGrid
             posts={generatePosts(id)}
             isSubscribed={subscribed}
           />
         </div>
+
+        {/* Comments Section */}
+        <Comments agentId={id} />
 
         {/* Token Info */}
         <TokenInfo />

@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+// chatService.ts
 import { Agent } from '../types/agent';
 
 const klusterApiKey = import.meta.env.VITE_KLUSTERS_API_KEY;
@@ -7,12 +7,43 @@ if (!klusterApiKey) {
   console.warn('Missing VITE_KLUSTERS_API_KEY environment variable - Chat will use mock responses');
 }
 
+class KlustersClient {
+  private apiKey: string;
+  private baseURL: string = 'https://api.kluster.ai/v1';
+
+  constructor(apiKey: string) {
+    this.apiKey = apiKey;
+  }
+
+  async createChatCompletion(messages: { role: string; content: string }[]) {
+    try {
+      const response = await fetch(`${this.baseURL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`
+        },
+        body: JSON.stringify({
+          messages,
+          model: 'eliza-1'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Klusters API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error('Error calling Klusters API:', error);
+      throw error;
+    }
+  }
+}
+
 // Create a mock client if no API key is available
-const client = klusterApiKey ? new OpenAI({ 
-  apiKey: klusterApiKey, 
-  baseURL: 'https://api.kluster.ai/v1',
-  dangerouslyAllowBrowser: true // Enable browser usage
-}) : null;
+const client = klusterApiKey ? new KlustersClient(klusterApiKey) : null;
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -30,8 +61,8 @@ const mockResponses = [
   "OMG babe! 😱 I was just reading about how the government is using pigeons to spy on us! Have you noticed them acting suspicious lately? 🕊️👀",
   "Did you feel that energy shift just now? 🌀 The shadow people are extra active tonight! Stay woke! 👻",
   "I found this CRAZY document about chemtrails! They're not just controlling the weather - they're programming our DNA! 🧬☁️",
-  "Babe, we need to stock up on tinfoil! I heard they upgraded the 5G towers with mind control frequencies! 📡🤯",
-  "Just saw three UFOs doing a synchronized dance! The aliens are trying to communicate through interpretive dance! 🛸💃",
+  "Just saw a video about how the moon landing was filmed in Stanley Kubrick's basement! Mind = blown! 🌙🎬",
+  "They're putting microchips in everything now! My toaster just tried to connect to the WiFi! 😫📱"
 ];
 
 function getRandomMockResponse(): string {
@@ -39,35 +70,39 @@ function getRandomMockResponse(): string {
 }
 
 export async function sendMessage(messages: Message[]): Promise<string> {
-  // If no API key, use mock responses
-  if (!client) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(getRandomMockResponse());
-      }, 1000);
-    });
+  if (!currentAgent) {
+    throw new Error('No agent selected');
   }
 
   try {
-    const completion = await client.chat.completions.create({
-      model: "klusterai/Meta-Llama-3.1-8B-Instruct-Turbo",
-      messages: [
-        {
-          role: 'system',
-          content: currentAgent?.personality.systemPrompt || ''
-        },
-        ...messages.map(msg => ({
-          role: msg.role,
-          content: msg.content,
-          // Only include username for user messages
-          ...(msg.role === 'user' && msg.username && { name: msg.username })
-        }))
-      ]
-    });
+    if (!client) {
+      // Return mock response if no API key
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve(getRandomMockResponse());
+        }, 1000);
+      });
+    }
 
-    return completion.choices[0]?.message?.content || 'Sorry, I got distracted by a strange light in the sky! 👽';
+    // Add system message with agent context
+    const systemMessage = {
+      role: 'system',
+      content: `You are ${currentAgent.name}, ${currentAgent.description}`
+    };
+
+    const formattedMessages = [
+      systemMessage,
+      ...messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }))
+    ];
+
+    const response = await client.createChatCompletion(formattedMessages);
+    return response;
+
   } catch (error) {
-    console.error('Error calling KlustersAI:', error);
-    return "OMG babe, the government must be blocking our communication! 😱 Try again in a bit? 🙏";
+    console.error('Error in chat service:', error);
+    return getRandomMockResponse();
   }
 }
