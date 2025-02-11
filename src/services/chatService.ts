@@ -27,7 +27,9 @@ class KlustersClient {
         },
         body: JSON.stringify({
           messages,
-          model: 'eliza-1'
+          model: 'meta-llama-2-70b-chat',
+          temperature: 0.7,
+          max_tokens: 500
         })
       });
 
@@ -77,13 +79,14 @@ export async function sendMessage(messages: Message[]): Promise<string> {
   }
 
   try {
-    if (!client || !klusterApiKey.startsWith('kl-')) {
-      // Return mock response if no API key or invalid key format
-      return new Promise(resolve => {
-        setTimeout(() => {
-          resolve(getRandomMockResponse());
-        }, 1000);
-      });
+    if (!client) {
+      console.error('Klusters client not initialized - check your API key');
+      return getRandomMockResponse();
+    }
+
+    if (!klusterApiKey.startsWith('kl-')) {
+      console.error('Invalid Klusters API key format');
+      return getRandomMockResponse();
     }
 
     // Add system message with agent context

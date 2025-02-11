@@ -5,6 +5,7 @@ import { useChat } from '../hooks/useChat';
 import { useGlobalStore } from '../store/globalStore';
 import UsernamePrompt from './UsernamePrompt';
 import { getAgent } from '../data/agents';
+import { saveChatMessage } from '../services/databaseService';
 
 interface ChatInterfaceProps {
   agentId: string;
@@ -42,7 +43,14 @@ export default function ChatInterface({ agentId }: ChatInterfaceProps) {
 
     try {
       const response = await sendMessage([...messages, userMessage]);
-      setMessages(prev => [...prev, { role: 'assistant', content: response }]);
+      const assistantMessage = { role: 'assistant', content: response };
+      setMessages(prev => [...prev, assistantMessage as Message]);
+      
+      // Save messages to database
+      if (username) {
+        await saveChatMessage(username, agentId, userMessage.content, 'user');
+        await saveChatMessage(username, agentId, response, 'assistant');
+      }
     } catch (error) {
       console.error('Failed to send message:', error);
       setMessages(prev => [...prev, { 
