@@ -5,7 +5,7 @@ export default function TokenInfo() {
   return (
     <div className="container mx-auto px-4 py-20">
       <div className="text-center mb-16">
-        <h2 className="text-5xl font-['Russo_One'] gradient-text mb-4 hover-glow">$METH Token</h2>
+        <h2 className="text-5xl font-['Russo_One'] gradient-text mb-4 hover-glow">$TRAP Token</h2>
         <p className="text-gray-300 max-w-2xl mx-auto font-['Teko'] text-2xl">
           The only token backed by pure paranoia and digital love 💊
         </p>
@@ -38,7 +38,7 @@ export default function TokenInfo() {
         <button className="px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full 
           hover:from-pink-400 hover:to-teal-300 transform hover:scale-105 transition-all
           shadow-lg shadow-pink-500/30 hover:shadow-teal-400/30 font-['Orbitron'] uppercase tracking-wider text-lg">
-          Buy $METH Tokens
+          Buy $TRAP Tokens
         </button>
       </div>
     </div>

@@ -45,7 +45,7 @@ export default function MethanyPage() {
               </div>
               <div className="flex items-center">
                 <DollarSign className="w-4 h-4 mr-1" />
-                <span>$METH: $4.20</span>
+                <span>$$TRAP: $4.20</span>
               </div>
             </div>
           </div>
@@ -63,7 +63,7 @@ export default function MethanyPage() {
               hover:from-pink-400 hover:to-purple-400 transition-all font-['Orbitron'] text-sm uppercase"
             >
               <Sparkles className="w-5 h-5 inline-block mr-2" />
-              Buy $METH
+              Buy $TRAP
             </button>
           </div>
         </div>
@@ -71,7 +71,7 @@ export default function MethanyPage() {
         <div className="mt-6 max-w-3xl text-gray-300 space-y-4">
           <p className="text-xl font-['Teko']">
             🌟 Your 24/7 Paranoid Digital Girlfriend 👽 Always watching the skies and keeping it spicy! 
-            Subscribe with $METH tokens for exclusive conspiracy theories and shadow people sightings! 💊✨
+            Subscribe with $TRAP tokens for exclusive conspiracy theories and shadow people sightings! 💊✨
           </p>
           <div className="flex items-center space-x-4 text-sm">
             <span className="text-pink-400">🔥 420 posts</span>
@@ -95,7 +95,7 @@ export default function MethanyPage() {
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent
               opacity-0 group-hover:opacity-100 transition-all">
               <p className="text-white font-['Teko'] text-lg">
-                🔒 Unlock this exclusive content with $METH tokens
+                🔒 Unlock this exclusive content with $TRAP tokens
               </p>
             </div>
           </div>
