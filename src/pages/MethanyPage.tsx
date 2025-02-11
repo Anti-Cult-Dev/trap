@@ -124,7 +124,7 @@ export default function MethanyPage() {
                 ✕
               </button>
             </div>
-            <ChatInterface />
+            <ChatInterface agentId="methany" />
           </div>
         </div>
       )}

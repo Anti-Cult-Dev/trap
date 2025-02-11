@@ -27,12 +27,20 @@ export function useTokenPrice(tokenAddress: string, chainId: string = 'ethereum'
       }
 
       try {
+        // Validate token address format
+        if (!/^0x[a-fA-F0-9]{40}$/.test(tokenAddress)) {
+          throw new Error('Invalid token address format');
+        }
+
         const chainPrefix = chainId === 'ethereum' ? 'ethereum' : chainId;
         const response = await fetch(
           `https://api.dexscreener.com/latest/dex/tokens/${chainPrefix}/${tokenAddress}`
         );
         
         if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('Token not found');
+          }
           throw new Error(`API Error: ${response.status}`);
         }
 

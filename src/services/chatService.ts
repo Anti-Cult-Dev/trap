@@ -5,6 +5,8 @@ const klusterApiKey = import.meta.env.VITE_KLUSTERS_API_KEY;
 
 if (!klusterApiKey) {
   console.warn('Missing VITE_KLUSTERS_API_KEY environment variable - Chat will use mock responses');
+} else if (!klusterApiKey.startsWith('kl-')) {
+  console.warn('Invalid Klusters API key format - Chat will use mock responses');
 }
 
 class KlustersClient {
@@ -75,8 +77,8 @@ export async function sendMessage(messages: Message[]): Promise<string> {
   }
 
   try {
-    if (!client) {
-      // Return mock response if no API key
+    if (!client || !klusterApiKey.startsWith('kl-')) {
+      // Return mock response if no API key or invalid key format
       return new Promise(resolve => {
         setTimeout(() => {
           resolve(getRandomMockResponse());

@@ -106,15 +106,15 @@ const generatePosts = (agentId: string) => {
 };
 
 export default function AgentProfile() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const agent = getAgent(id);
+  const agent = getAgent(id || '');
   const [showShare, setShowShare] = useState(false);
   const [awakeTime, setAwakeTime] = useState(0);
   const { isFavorite, toggleFavorite } = useFavorites();
   const { isSubscribed, subscribe, getSubscriptionCount } = useSubscriptions();
-  const favorite = isFavorite(id);
-  const subscribed = isSubscribed(id);
+  const favorite = isFavorite(id || '');
+  const subscribed = isSubscribed(id || '');
   const { marketCap, isLoading } = useTokenPrice(agent?.tokenAddress || '', agent?.chainId);
 
   useEffect(() => {
@@ -131,7 +131,7 @@ export default function AgentProfile() {
     }
   }, [id]);
 
-  if (!agent) {
+  if (!agent || !id) {
     return <div className="min-h-screen flex items-center justify-center">Agent not found</div>;
   }
 
