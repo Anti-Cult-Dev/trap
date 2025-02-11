@@ -3,13 +3,7 @@ import { Agent } from '../types/agent';
 
 const klusterApiKey = import.meta.env.VITE_KLUSTERS_API_KEY;
 
-if (!klusterApiKey) {
-  console.warn('Missing VITE_KLUSTERS_API_KEY environment variable - Chat will use mock responses');
-} else if (!klusterApiKey.startsWith('kl-')) {
-  console.warn('Invalid Klusters API key format - Chat will use mock responses');
-}
-
-class KlustersClient {
+export class KlustersClient {
   private apiKey: string;
   private baseURL: string = 'https://api.kluster.ai/v1';
 
@@ -28,8 +22,8 @@ class KlustersClient {
         body: JSON.stringify({
           messages,
           model: 'meta-llama-2-70b-chat',
-          temperature: 0.7,
-          max_tokens: 500
+          temperature: 0.9,
+          max_tokens: 1000
         })
       });
 
@@ -41,12 +35,11 @@ class KlustersClient {
       return data.choices[0].message.content;
     } catch (error) {
       console.error('Error calling Klusters API:', error);
-      throw error;
+      return getRandomMockResponse();
     }
   }
 }
 
-// Create a mock client if no API key is available
 const client = klusterApiKey ? new KlustersClient(klusterApiKey) : null;
 
 export interface Message {
@@ -80,12 +73,6 @@ export async function sendMessage(messages: Message[]): Promise<string> {
 
   try {
     if (!client) {
-      console.error('Klusters client not initialized - check your API key');
-      return getRandomMockResponse();
-    }
-
-    if (!klusterApiKey.startsWith('kl-')) {
-      console.error('Invalid Klusters API key format');
       return getRandomMockResponse();
     }
 
@@ -103,11 +90,9 @@ export async function sendMessage(messages: Message[]): Promise<string> {
       }))
     ];
 
-    const response = await client.createChatCompletion(formattedMessages);
-    return response;
-
+    return await client.createChatCompletion(formattedMessages);
   } catch (error) {
-    console.error('Error in chat service:', error);
+    console.error('Error in sendMessage:', error);
     return getRandomMockResponse();
   }
 }

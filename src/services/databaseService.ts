@@ -1,82 +1,129 @@
-import { Pool } from 'pg';
+// Initialize IndexedDB
+const DB_NAME = 'traphouse_db';
+const DB_VERSION = 1;
 
-// Initialize the connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+let db: IDBDatabase;
 
-// Test the database connection
-pool.query('SELECT NOW()', (err, res) => {
-  if (err) {
-    console.error('Error connecting to the database:', err);
-  } else {
-    console.log('Database connected successfully');
-  }
-});
+const initDB = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-// Helper function to execute queries
-export async function query(text: string, params?: any[]) {
-  try {
-    const result = await pool.query(text, params);
-    return result.rows;
-  } catch (error) {
-    console.error('Database query error:', error);
-    throw error;
-  }
-}
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      db = request.result;
+      resolve();
+    };
 
-// Chat message related queries
+    request.onupgradeneeded = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+      
+      // Create chat messages store
+      if (!db.objectStoreNames.contains('chat_messages')) {
+        const chatStore = db.createObjectStore('chat_messages', { keyPath: 'id', autoIncrement: true });
+        chatStore.createIndex('user_agent', ['userId', 'agentId'], { unique: false });
+      }
+
+      // Create user interactions store
+      if (!db.objectStoreNames.contains('user_interactions')) {
+        const interactionStore = db.createObjectStore('user_interactions', { keyPath: 'id', autoIncrement: true });
+        interactionStore.createIndex('user_agent_type', ['userId', 'agentId', 'type'], { unique: true });
+      }
+    };
+  });
+};
+
+// Initialize the database when the service is loaded
+initDB().catch(console.error);
+
+// Chat message related operations
 export async function saveChatMessage(userId: string, agentId: string, content: string, role: 'user' | 'assistant') {
-  const text = `
-    INSERT INTO chat_messages (user_id, agent_id, content, role, created_at)
-    VALUES ($1, $2, $3, $4, NOW())
-    RETURNING *
-  `;
-  const values = [userId, agentId, content, role];
-  return query(text, values);
+  await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('chat_messages', 'readwrite');
+    const store = transaction.objectStore('chat_messages');
+
+    const message = {
+      userId,
+      agentId,
+      content,
+      role,
+      createdAt: new Date().toISOString()
+    };
+
+    const request = store.add(message);
+
+    request.onsuccess = () => resolve(message);
+    request.onerror = () => reject(request.error);
+  });
 }
 
 export async function getChatHistory(userId: string, agentId: string) {
-  const text = `
-    SELECT * FROM chat_messages
-    WHERE user_id = $1 AND agent_id = $2
-    ORDER BY created_at ASC
-  `;
-  const values = [userId, agentId];
-  return query(text, values);
+  await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('chat_messages', 'readonly');
+    const store = transaction.objectStore('chat_messages');
+    const index = store.index('user_agent');
+
+    const request = index.getAll([userId, agentId]);
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
 }
 
-// User interaction related queries
+// User interaction related operations
 export async function saveUserInteraction(userId: string, agentId: string, type: 'like' | 'follow') {
-  const text = `
-    INSERT INTO user_interactions (user_id, agent_id, interaction_type, created_at)
-    VALUES ($1, $2, $3, NOW())
-    ON CONFLICT (user_id, agent_id, interaction_type)
-    DO NOTHING
-    RETURNING *
-  `;
-  const values = [userId, agentId, type];
-  return query(text, values);
+  await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('user_interactions', 'readwrite');
+    const store = transaction.objectStore('user_interactions');
+
+    const interaction = {
+      userId,
+      agentId,
+      type,
+      createdAt: new Date().toISOString()
+    };
+
+    const request = store.add(interaction);
+
+    request.onsuccess = () => resolve(interaction);
+    request.onerror = () => reject(request.error);
+  });
 }
 
 export async function removeUserInteraction(userId: string, agentId: string, type: 'like' | 'follow') {
-  const text = `
-    DELETE FROM user_interactions
-    WHERE user_id = $1 AND agent_id = $2 AND interaction_type = $3
-    RETURNING *
-  `;
-  const values = [userId, agentId, type];
-  return query(text, values);
+  await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('user_interactions', 'readwrite');
+    const store = transaction.objectStore('user_interactions');
+    const index = store.index('user_agent_type');
+
+    const request = index.getKey([userId, agentId, type]);
+
+    request.onsuccess = () => {
+      if (request.result) {
+        const deleteRequest = store.delete(request.result);
+        deleteRequest.onsuccess = () => resolve({ success: true });
+        deleteRequest.onerror = () => reject(deleteRequest.error);
+      } else {
+        resolve({ success: false });
+      }
+    };
+    request.onerror = () => reject(request.error);
+  });
 }
 
 export async function getUserInteractions(userId: string) {
-  const text = `
-    SELECT * FROM user_interactions
-    WHERE user_id = $1
-  `;
-  const values = [userId];
-  return query(text, values);
+  await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('user_interactions', 'readonly');
+    const store = transaction.objectStore('user_interactions');
+    const range = IDBKeyRange.bound([userId], [userId, []], false, true);
+
+    const request = store.getAll(range);
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
 }

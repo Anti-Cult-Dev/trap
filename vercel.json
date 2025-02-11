@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "env": {
+    "VITE_KLUSTERS_API_KEY": "kl-7d041a07-5ba3-41cf-9ccb-09a519d1fff4"
+  },
+  "framework": "vite",
+  "installCommand": "npm install"
+}
