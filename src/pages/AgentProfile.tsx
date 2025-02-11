@@ -211,7 +211,7 @@ export default function AgentProfile() {
                     Twitter
                   </a>
                   <a
-                    href="https://t.me/+FktWj8FXNcxiNTAx"
+                    href="https://t.me/thtraphouse"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-6 py-2 bg-[#0088cc]/80 hover:bg-[#0088cc] rounded-full
