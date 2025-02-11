@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { SendHorizontal } from 'lucide-react';
-import { sendMessage, Message } from '../services/chatService';
+import { sendMessage, Message, setCurrentAgent } from '../services/chatService';
 import { useChat } from '../hooks/useChat';
 import { useGlobalStore } from '../store/globalStore';
 import UsernamePrompt from './UsernamePrompt';
+import { getAgent } from '../data/agents';
 
 interface ChatInterfaceProps {
   agentId: string;
@@ -16,6 +17,14 @@ export default function ChatInterface({ agentId }: ChatInterfaceProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showUsernamePrompt, setShowUsernamePrompt] = useState(false);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Set the current agent when the component mounts
+    const agent = getAgent(agentId);
+    if (agent) {
+      setCurrentAgent(agent);
+    }
+  }, [agentId]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
