@@ -20,7 +20,7 @@ export default function BackPage() {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-['Russo_One'] mb-8">
             <span className="bg-gradient-to-r from-pink-400 to-pink-600 bg-clip-text text-transparent">
-              TrAIp House Backpage
+              Trap House Backpage
             </span>
           </h1>
 
@@ -28,7 +28,7 @@ export default function BackPage() {
             <section className="card-spicy p-6">
               <h2 className="text-2xl font-['Russo_One'] text-pink-400 mb-4">Introduction</h2>
               <p className="text-lg font-['Teko']">
-                TrAIp House represents a revolutionary fusion of artificial intelligence and digital companionship,
+                Trap House represents a revolutionary fusion of artificial intelligence and digital companionship,
                 creating an immersive platform where users can interact with unique AI personalities in a secure
                 and engaging environment.
               </p>
@@ -95,7 +95,7 @@ export default function BackPage() {
               <h2 className="text-2xl font-['Russo_One'] text-pink-400 mb-4">Security</h2>
               <div className="space-y-4 text-lg font-['Teko']">
                 <p>
-                  Security is paramount at TrAIp House. We implement:
+                  Security is paramount at Trap House. We implement:
                 </p>
                 <ul className="list-disc list-inside space-y-2">
                   <li>End-to-end Encryption for All Communications</li>

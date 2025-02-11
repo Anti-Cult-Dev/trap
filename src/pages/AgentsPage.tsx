@@ -33,7 +33,7 @@ export default function AgentsPage() {
 
         <h1 className="text-4xl font-['Russo_One'] mb-8">
           <span className="bg-gradient-to-r from-pink-400 to-pink-600 bg-clip-text text-transparent">
-            TrAIp House Agents
+            Trap House Agents
           </span>
         </h1>
 
@@ -179,7 +179,7 @@ function AgentCard({ agent }) {
         <ShareModal
           url={`${window.location.origin}/agents/${agent.id}`}
           onClose={() => setShowShare(false)}
-          title={`Check out ${agent.name} on TrAIp House! 💖`}
+          title={`Check out ${agent.name} on Trap House! 💖`}
           image={agent.image}
         />
       )}

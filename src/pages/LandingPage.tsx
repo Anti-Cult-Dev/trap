@@ -51,12 +51,12 @@ export default function LandingPage() {
               @methanyyyyy
             </a>
             <a
-              href="https://x.com/TRAiP_HOUSE"
+              href="https://x.com/TRAP_HOUSE_INC"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-medium text-white hover:text-pink-400 transition-colors"
             >
-              @TRAiP_HOUSE
+              @TRAP_HOUSE_INC
             </a>
           </div>
 

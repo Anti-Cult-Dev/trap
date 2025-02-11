@@ -9,7 +9,7 @@ import Header from './components/Header';
 import MessengerOverlay from './components/MessengerOverlay';
 import { useGlobalStore } from './store/globalStore';
 import { useLocation } from 'react-router-dom';
-
+const setHasVisitedAgents: any
 function App() {
   const { hasVisitedAgents } = useGlobalStore();
   const location = useLocation();
